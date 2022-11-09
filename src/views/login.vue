@@ -6,14 +6,14 @@
                 <div class="bg-item">
                     <h3>已有账号？</h3>
                     <img src="@/assets/login_img/login1.webp" alt="">
-                    <div class="login" @click="isLogin = false">
+                    <div class="login" @click="negLogin">
                         去登录
                     </div>
                 </div>
                 <div class="bg-item">
                     <h3>没有账号？</h3>
                     <img id="img1" src="@/assets/login_img/login2.webp" alt="">
-                    <div class="login" @click="isLogin = true">
+                    <div class="login" @click="negLogin">
                         去注册
                     </div>
                 </div>
@@ -23,24 +23,43 @@
                 <div class="context" :class="isLogin ? 'to-right' : ''">
                     <img src="@/assets/login_img/cat.png" alt="" class="cat">
                     <transition mode="out-in">
+                        <!-- 登录模块 -->
                         <div class="sign" v-if="!isLogin">
-                            <h2> 登录 </h2>
+                            <h2 style="margin-bottom: 2.6042vw;"> 登录 </h2>
                             <input type="text" placeholder="邮箱 或 ID号">
                             <div class="pass">
-                                <input :type="passShow ? 'text' : 'password'" placeholder="密码">
-                                <img class="eye" @click="passShow=!passShow"
-                                    :src="passShow ? require('@/assets/login_img/yanjing_xianshi.png') : require('@/assets/login_img/yanjing_yincang.png')"
+                                <input :type="passShow1 ? 'text' : 'password'" placeholder="密码">
+                                <img class="eye" @click="passShow1 = !passShow1"
+                                    :src="passShow1 ? require('@/assets/login_img/yanjing_xianshi.png') : require('@/assets/login_img/yanjing_yincang.png')"
                                     alt="">
+                            </div>
+                            <div class="code">
+                                <input type="text" placeholder="验证码">
+                                <canvas ref="canvas" width="60" height="25" @click="code"></canvas>
                             </div>
                             <div class="sign-btn">立即登录</div>
 
                         </div>
+                        <!-- 注册模块 -->
                         <div class="sign" v-else>
                             <h2> 注册 </h2>
-                            <input type="text" placeholder="邮箱 或 ID号">
+                            <input type="text" placeholder="昵称">
+                            <input type="text" placeholder="请输入邮箱">
+                            <div class="code">
+                                <input type="text" placeholder="验证码">
+                                <div style="color:white;font-size: 1.0417vw;margin-right: 0.5vw;"
+                                    @click="countNum == maxNum && countNum--">
+                                    {{ countStr }}</div>
+                            </div>
                             <div class="pass">
-                                <input type="password" placeholder="密码">
-                                <img class="eye" src="@/assets/login_img/yanjing_yincang.png" alt="">
+                                <input :type="passShow2 ? 'text' : 'password'" placeholder="密码">
+                                <img class="eye" @click="passShow2 = !passShow2"
+                                    :src="passShow2 ? require('@/assets/login_img/yanjing_xianshi.png') : require('@/assets/login_img/yanjing_yincang.png')"
+                                    alt="">
+                            </div>
+                            <div class="code">
+                                <input type="text" placeholder="验证码">
+                                <canvas ref="canvas" width="60" height="25" @click="code"></canvas>
                             </div>
                             <div class="sign-btn">立即注册</div>
                         </div>
@@ -56,14 +75,56 @@
 
 <script setup>
 import { ref } from '@vue/reactivity'
+import { computed, nextTick, onMounted, onUpdated, watch } from '@vue/runtime-core'
 import { useRoute } from 'vue-router'
 //控制动画
 let isLogin = ref(false)
-//控制密码显示
-let passShow = ref(false)
+//控制登录的密码显示
+let passShow1 = ref(false)
+//控制注册的密码显示
+let passShow2 = ref(false)
+//初始化验证码
+let vCode = ref('0000')
+drawCode()
+//切换登录和注册
+function negLogin() {
+    isLogin.value = !isLogin.value
+    drawCode()
+}
 
-// @param aa dnnjj
-// 
+//验证码倒计时的最大时间
+let maxNum = 60
+//发送验证码的倒计时
+let countNum = ref(maxNum)
+//用于显示按钮的内容
+let countStr = computed(() => {
+    if (countNum.value == maxNum || countNum.value <= 0) {
+        countNum.value = maxNum
+        return '发送'
+    } else if (countNum.value > 0) {
+        setTimeout(() => countNum.value--, 1000)
+        return countNum.value + ' s'
+    }
+})
+
+
+
+//当点击发生切换动画时，延迟执行画验证码，防止绘画失败
+function drawCode() {
+    nextTick(() => {
+        setTimeout(() => {
+            code()
+        }, 500);
+    })
+}
+//画验证码
+function code() {
+    let ctx = document.querySelector('canvas').getContext('2d')
+    vCode.value = Math.random().toString().slice(3, 7)
+    ctx.clearRect(0, 0, 60, 25)
+    ctx.font = '28px ChunTi'
+    ctx.fillText(vCode.value, 8, 22, 60)
+}
 
 </script>
 
@@ -72,7 +133,7 @@ let passShow = ref(false)
     width: 100vw;
     height: 100vh;
     background: url('@/assets/login_img/bg1.webp') no-repeat;
-    background-size: 100%;
+    background-size: 100% 120%;
     position: relative;
 
     .box {
@@ -104,7 +165,7 @@ let passShow = ref(false)
                 position: relative;
 
                 h3 {
-                    font-size: 28px;
+                    font-size: 1.6vw;
                     margin-top: 2.6042vw;
                     text-align: center;
                 }
@@ -133,6 +194,7 @@ let passShow = ref(false)
                     line-height: 2vw;
                     background: #e1abac;
                     border-radius: 0.5208vw;
+                    font-size: 1.0417vw;
                 }
             }
         }
@@ -157,7 +219,8 @@ let passShow = ref(false)
             }
 
             .sign {
-
+                position: relative;
+                z-index: 1;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
@@ -166,9 +229,10 @@ let passShow = ref(false)
                     margin-top: 2vw;
                     text-align: center;
                     color: white;
-                    font-size: 40px;
+                    font-size: 3vw;
                 }
 
+                //密码框
                 .pass {
                     width: 100%;
                     position: relative;
@@ -177,16 +241,32 @@ let passShow = ref(false)
 
                     .eye {
                         position: absolute;
-                        width: 20px;
-                        height: 20px;
+                        width: 1.5vw;
+                        height: 1.5vw;
                         bottom: 5px;
-                        right: 50px;
+                        right: 3.2vw;
+                    }
+                }
+
+                //验证码框
+                .code {
+                    width: 72%;
+                    display: flex;
+                    align-items: flex-end;
+                    justify-content: space-between;
+
+                    canvas {
+                        margin-left: 10px;
+                        border-radius: 5px;
+                        width: 60px;
+                        height: 25px;
+                        background: white;
                     }
                 }
 
                 //按钮
                 .sign-btn {
-                    margin-top: 50px;
+                    margin-top: 2.6042vw;
                     color: #eccacb;
                     font-size: 1.5625vw;
                     line-height: 2.6042vw;
@@ -199,7 +279,7 @@ let passShow = ref(false)
 
                 input {
                     text-indent: 0.5208vw;
-                    margin-top: 30px;
+                    margin-top: 1.5625vw;
                     width: 70%;
                     height: 25px;
                     color: white;

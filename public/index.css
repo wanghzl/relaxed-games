@@ -198,11 +198,12 @@ textarea {
     font-family: 'ChunTi';
 }
 
+/* 控制输入框提示信息的文字样式 */
 input::-webkit-input-placeholder {
     /* WebKit browsers */
 
     color: white;
 
-    font-size: 15px;
+    font-size: 0.7813vw;
 
 }
